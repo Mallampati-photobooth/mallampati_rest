@@ -8,6 +8,6 @@ install:
   - "pip install nose"
 # command to run tests
 script:
-  nosetests
+  coverage run nosetests
 after_success:
   coveralls
