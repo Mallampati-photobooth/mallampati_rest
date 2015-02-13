@@ -1,1 +1,3 @@
-# package rquirment list
+# package rquirement list
+sqlalchemy
+bottle
