@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 import datetime, imghdr, os
-from bottle import route, run, request, abort, error, debug
+import bottle
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, LargeBinary, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,7 +12,9 @@ from sqlalchemy.orm import sessionmaker
 #==============================================================================
 # App general config & helper functions
 #==============================================================================
-debug(True)
+bottle.debug(True)
+app = bottle.Bottle()
+
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = set(['jpeg', 'jpg', 'png', 'gif'])
 
@@ -31,7 +32,7 @@ Base = declarative_base()
 class Images(Base):
     __tablename__ = 'images'
 
-    id = Column(Integer, primary_key=True)    
+    id = Column(Integer, primary_key=True)
     original_img = Column(LargeBinary)
     processed_img = Column(LargeBinary)
     uploaded_on = Column(DateTime, default = datetime.datetime.utcnow(),\
@@ -39,12 +40,12 @@ class Images(Base):
     processed_on = Column(DateTime)
     mallampati_score = Column(Integer)
     valid_img = Column(Boolean, default = False)
-    
+
     def __init__(self, original_img):
         self.original_img = original_img
 
     def __repr__(self):
-            return '<Images %r>' % self.original_img
+        return '<Images %r>' % self.original_img
 
 Base.metadata.create_all(engine)
 
@@ -53,34 +54,36 @@ Base.metadata.create_all(engine)
 # Error handlers
 #==============================================================================
 
-@error(404)
+@app.error(404)
 def not_found(error):
     return {'error': 'Not found'}
 
-@error(400)
+@app.error(400)
 def bad_request(error):
     return {'error': 'Bad request'}
 
-@error(500)
+@app.error(500)
 def internal_server(error):
     return {'error': 'Internal server error'}
 
-@error(403)
+@app.error(403)
 def forbidden(error):
     return {'error': 'Access forbidden'}
 
-    
 #==============================================================================
 # REST routes
 #==============================================================================
 
-@route('/Images', method= 'POST') 
+@app.post('/Images')
 def upload_image():
     '''
     Uploads image
     '''
-    file = request.files.get('file')
+    file = bottle.request.files.get('file')
     print(type(file))
+    print('filename: %s' %file.filename)
+    print('allowed_file: %s' %allowed_file(file.filename))
+    print('P: %s' %(imghdr.what(file.file) in ALLOWED_EXTENSIONS))
     if file and allowed_file(file.filename)\
         and imghdr.what(file.file) in ALLOWED_EXTENSIONS:
         file.save(UPLOAD_FOLDER)
@@ -94,9 +97,13 @@ def upload_image():
             session.close()
         os.remove(os.path.join(UPLOAD_FOLDER, file.filename))
     else:
-        abort(400)
-        
-@route('/Images/<row:int>', method= 'GET')
+        bottle.abort(400)
+
+@app.post('/test')
+def prueba():
+    return '200 OK'
+
+@app.get('/Images/<row:int>')
 def upload_metadata(row):
     '''
     GETs the image from the blob
@@ -112,4 +119,5 @@ def upload_metadata(row):
         abort(400)
 
 
-run(host='localhost', port=5000)
+if __name__ == '__main__':
+    app.run(host='localhost', port=5000)
