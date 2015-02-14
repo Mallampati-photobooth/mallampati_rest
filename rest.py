@@ -104,7 +104,7 @@ def prueba():
     return '200 OK'
 
 @app.get('/Images/<row:int>')
-def upload_metadata(row):
+def retrieve_image(row):
     '''
     GETs the image from the blob
     '''
@@ -116,7 +116,7 @@ def upload_metadata(row):
         str(queried_row.id) + ".jpg"), "wb") as output_file:
             output_file.write(queried_row.original_img)
     except:
-        abort(400)
+        bottle.abort(400)
 
 
 if __name__ == '__main__':
