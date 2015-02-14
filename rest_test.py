@@ -9,53 +9,55 @@ class TestRestService(unittest.TestCase):
         self.app = TestApp(rest.app)
 
     def test_upload(self):
-        file_name = '007lva.jpg'
-        with open('./source_test_images/%s' % file_name, 'rb')\
-            as image:
-            content = compat.to_bytes(image.read())
-            resp = self.app.post('/Images',
-                                  upload_files=[('file', file_name, content)])
-            assert resp.status == '200 OK'
-    """
+        self.file_name = '007lva.jpg'
+        with open('./source_test_images/%s' % self.file_name, 'rb')\
+            as self.image:
+            self.content = compat.to_bytes(self.image.read())
+            self.resp = self.app.post('/Images', upload_files=[('file',
+                                                                self.file_name,
+                                                                self.content)])
+            self.assertEqual(self.resp.status, '200 OK')
+    
     def test_retrieve_image(self):
         self.file_name = '007lva.jpg'
-        self.image = file('./source_test_images/%s' % self.file_name)
-        self.uploaded_file_contents = self.image.read()
-        self.app.post('/Images', upload_files=[('file', self.file_name,
-                                                 self.uploaded_file_contents)])
+        with open('./source_test_images/%s' % self.file_name, 'rb')\
+            as self.image:
+            self.content = compat.to_bytes(self.image.read())
+            self.app.post('/Images', upload_files=[('file',
+                                                    self.file_name,
+                                                    self.content)])
         self.resp = self.app.get('/Images/1')
-        assert self.resp.status == '200 OK'
+        self.assertEqual(self.resp.status, '200 OK')
 
     def test_retrieve_nonexistent_image(self):
         self.file_name = '007lva.jpg'
-        self.image = file('./source_test_images/%s' % self.file_name)
-        self.uploaded_file_contents = self.image.read()
-        self.app.post('/Images', upload_files=[('file', self.file_name,
-                                                 self.uploaded_file_contents)])
+        with open('./source_test_images/%s' % self.file_name, 'rb')\
+            as self.image:
+            self.content = compat.to_bytes(self.image.read())
+            self.app.post('/Images', upload_files=[('file',
+                                                    self.file_name,
+                                                    self.content)])
         self.resp = self.app.get('/Images/5', expect_errors = True, 
                                  status = 500)
-        assert self.resp.status == '500 Internal Server Error'
-
-    def test_prueba(self):
-        self.resp = self.app.post('/test')
-        assert self.resp.status == '200 OK'
+        self.assertEqual(self.resp.status, '500 Internal Server Error')
 
     def test_error404(self):
         self.resp = self.app.get('/Dummy', expect_errors=True, status = 404)
-        assert self.resp.status == '404 Not Found'
+        self.assertEqual(self.resp.status, '404 Not Found')
 
     def test_error400_with_badfile(self):
         self.file_name = 'bad_file_test.txt'
-        self.image = file('./source_test_images/%s' % self.file_name)
-        self.uploaded_file_contents = self.image.read()
-        self.resp = self.app.post('/Images',
-                                  upload_files=[('file',
-                                                 self.file_name,
-                                                 self.uploaded_file_contents)],
-                                                 expect_errors=True, 
-                                                 status = 400)
-        assert self.resp.status == '400 Bad Request'
+        with open('./source_test_images/%s' % self.file_name, 'rb')\
+            as self.image:
+            self.content = compat.to_bytes(self.image.read())
+            self.resp = self.app.post('/Images', 
+                                      upload_files=[('file',
+                                                     self.file_name,
+                                                     self.content)],
+                                                     expect_errors = True,
+                                                     status = 400)
+        self.assertEqual(self.resp.status, '400 Bad Request')
 
     def tearDown(self):
         pass
-    """
+    
