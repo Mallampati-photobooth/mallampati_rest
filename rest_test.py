@@ -37,7 +37,7 @@ class TestRestService(unittest.TestCase):
             self.app.post('/Images', upload_files=[('file',
                                                     self.file_name,
                                                     self.content)])
-        self.resp = self.app.get('/Images/5', expect_errors = True, 
+        self.resp = self.app.get('/Images/4', expect_errors = True, 
                                  status = 500)
         self.assertEqual(self.resp.status, '500 Internal Server Error')
 
