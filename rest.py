@@ -81,7 +81,7 @@ def forbidden(error):
 @app.post('/Images')
 def upload_image():
     '''
-    Uploads image
+    Uploads image.
     '''
     file = bottle.request.files.get('file')
     print(type(file))
