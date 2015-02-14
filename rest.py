@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import datetime, imghdr, os
 import bottle
@@ -81,9 +80,6 @@ def upload_image():
     '''
     file = bottle.request.files.get('file')
     print(type(file))
-    print('filename: %s' %file.filename)
-    print('allowed_file: %s' %allowed_file(file.filename))
-    print('P: %s' %(imghdr.what(file.file) in ALLOWED_EXTENSIONS))
     if file and allowed_file(file.filename)\
         and imghdr.what(file.file) in ALLOWED_EXTENSIONS:
         file.save(UPLOAD_FOLDER)
@@ -98,10 +94,6 @@ def upload_image():
         os.remove(os.path.join(UPLOAD_FOLDER, file.filename))
     else:
         bottle.abort(400)
-
-@app.post('/test')
-def prueba():
-    return '200 OK'
 
 @app.get('/Images/<row:int>')
 def retrieve_image(row):
