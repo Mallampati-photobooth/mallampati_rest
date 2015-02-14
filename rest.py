@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# python libs
 import datetime, imghdr, os
 import bottle
 from sqlalchemy import create_engine
@@ -7,6 +8,8 @@ from sqlalchemy import Column, Integer, LargeBinary, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+# custom packages
+from mallampati_image.preprocessing import preprocess
 
 #==============================================================================
 # App general config & helper functions
@@ -36,15 +39,17 @@ class Images(Base):
     processed_img = Column(LargeBinary)
     uploaded_on = Column(DateTime, default = datetime.datetime.utcnow(),\
         nullable=False)
-    processed_on = Column(DateTime)
+    processed_on = Column(DateTime, default = datetime.datetime.utcnow(),\
+        nullable=False)
     mallampati_score = Column(Integer)
     valid_img = Column(Boolean, default = False)
 
-    def __init__(self, original_img):
+    def __init__(self, original_img, processed_img):
         self.original_img = original_img
+        self.processed_img = processed_img
 
     def __repr__(self):
-        return '<Images %r>' % self.original_img
+        return '<Images %r %r>' % self.original_img, self.processed_img
 
 Base.metadata.create_all(engine)
 
@@ -83,15 +88,22 @@ def upload_image():
     if file and allowed_file(file.filename)\
         and imghdr.what(file.file) in ALLOWED_EXTENSIONS:
         file.save(UPLOAD_FOLDER)
+        preprocess(os.path.join(UPLOAD_FOLDER, file.filename), UPLOAD_FOLDER,
+                   file.filename)
         with open(os.path.join(UPLOAD_FOLDER, file.filename), "rb")\
             as input_file:
-            data = input_file.read()
-            db_image = Images(data)
-            session = Session()
-            session.add(db_image)
-            session.commit()
-            session.close()
+                with open(os.path.join(UPLOAD_FOLDER,
+                                       "gray_" + file.filename), "rb")\
+                as gray_file:
+                    img = input_file.read()
+                    pp_img = gray_file.read()
+                    db_entry = Images(img, pp_img)
+                    session = Session()
+                    session.add(db_entry)
+                    session.commit()
+                    session.close()
         os.remove(os.path.join(UPLOAD_FOLDER, file.filename))
+        os.remove(os.path.join(UPLOAD_FOLDER, "gray_" + file.filename))
     else:
         bottle.abort(400)
 
@@ -104,9 +116,12 @@ def retrieve_image(row):
     queried_row = session.query(Images).filter(Images.id == row).one()
     session.close()
     try:
-        with open(os.path.join(UPLOAD_FOLDER,\
-        str(queried_row.id) + ".jpg"), "wb") as output_file:
-            output_file.write(queried_row.original_img)
+        images = {'original':queried_row.original_img,
+                  'processed':queried_row.processed_img}
+        for image in images:
+            with open(os.path.join(UPLOAD_FOLDER,image + "_"
+            +str(queried_row.id) + ".jpg"), "wb") as output_file:
+                output_file.write(images[image])
     except:
         bottle.abort(400)
 
