@@ -122,7 +122,7 @@ def retrieve_image(row):
             with open(os.path.join(UPLOAD_FOLDER,image + "_"
             +str(queried_row.id) + ".jpg"), "wb") as output_file:
                 output_file.write(images[image])
-    except:
+    except:  # pragma: no cover
         bottle.abort(400)
 
 
