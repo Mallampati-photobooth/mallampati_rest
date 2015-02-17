@@ -4,8 +4,13 @@ from webtest import TestApp, compat
 import rest, unittest, os
 
 class TestRestService(unittest.TestCase):
+    '''
+    This test suite uses external ressources. Ideally, it should remove those,
+    and replace them with mock objects.
+    '''
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         self.app = TestApp(rest.app)
         self.file_name = '007lva.jpg'
         with open('./source_test_images/%s' % self.file_name, 'rb')\
@@ -51,12 +56,11 @@ class TestRestService(unittest.TestCase):
                                                      status = 400)
         self.assertEqual(self.resp.status, '400 Bad Request')
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(self):
         '''
         Side effects cleanup.
         '''
-        #os.remove('./uploads/original_1.jpg')
-        #os.remove('./uploads/processed_1.jpg')
-        #os.remove('./images.db')
-        pass
-    
+        os.remove('./uploads/original_1.jpg')
+        os.remove('./uploads/processed_1.jpg')
+        os.remove('./images.db')
