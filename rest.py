@@ -93,8 +93,8 @@ def upload_image():
         with open(os.path.join(UPLOAD_FOLDER, file.filename), "rb")\
             as input_file:
                 with open(os.path.join(UPLOAD_FOLDER,
-                                       "gray_" + file.filename), "rb")\
-                as gray_file:
+                                       file.filename.rsplit('.', 1)[0]+".npy"),
+                                       "rb") as gray_file:
                     img = input_file.read()
                     pp_img = gray_file.read()
                     db_entry = Images(img, pp_img)
@@ -103,7 +103,8 @@ def upload_image():
                     session.commit()
                     session.close()
         os.remove(os.path.join(UPLOAD_FOLDER, file.filename))
-        os.remove(os.path.join(UPLOAD_FOLDER, "gray_" + file.filename))
+        os.remove(os.path.join(UPLOAD_FOLDER, file.filename.rsplit('.', 1)[0]
+            +".npy"))
     else:
         bottle.abort(400)
 
@@ -116,11 +117,12 @@ def retrieve_image(row):
     queried_row = session.query(Images).filter(Images.id == row).one()
     session.close()
     try:
-        images = {'original':queried_row.original_img,
-                  'processed':queried_row.processed_img}
+        images = {'original.jpg':queried_row.original_img,
+                  'processed.npy':queried_row.processed_img}
         for image in images:
-            with open(os.path.join(UPLOAD_FOLDER,image + "_"
-            +str(queried_row.id) + ".jpg"), "wb") as output_file:
+            with open(os.path.join(UPLOAD_FOLDER,
+                                   str(queried_row.id)+ "_"+image),
+                                   "wb") as output_file:
                 output_file.write(images[image])
     except:  # pragma: no cover
         bottle.abort(400)

@@ -55,12 +55,9 @@ class TestRestService(unittest.TestCase):
                                                      expect_errors = True,
                                                      status = 400)
         self.assertEqual(self.resp.status, '400 Bad Request')
-
+    
     @classmethod
     def tearDownClass(self):
-        '''
-        Side effects cleanup.
-        '''
-        os.remove('./uploads/original_1.jpg')
-        os.remove('./uploads/processed_1.jpg')
+        os.remove('./uploads/1_original.jpg')
+        os.remove('./uploads/1_processed.npy')
         os.remove('./images.db')
