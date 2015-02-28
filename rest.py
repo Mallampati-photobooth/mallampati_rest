@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 # custom packages
 from mallampati_image.preprocessing import preprocess
+from mallampati_detection.classify import classify
 
 #==============================================================================
 # App general config & helper functions
@@ -124,8 +125,14 @@ def retrieve_image(row):
                                    str(queried_row.id)+ "_"+image),
                                    "wb") as output_file:
                 output_file.write(images[image])
+         
+        score = classify(os.path.join(UPLOAD_FOLDER, str(queried_row.id)
+            + "_processed.npy"))
+
     except:  # pragma: no cover
         bottle.abort(400)
+    
+    return {'mallapati_score':str(score)}
 
 
 if __name__ == '__main__':
