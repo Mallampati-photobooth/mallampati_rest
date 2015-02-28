@@ -1,3 +1,6 @@
 [submodule "mallampati_image"]
 	path = mallampati_image
 	url = https://github.com/Mallampati-photobooth/mallampati_image.git
+[submodule "mallampati_detection"]
+	path = mallampati_detection
+	url = https://github.com/Mallampati-photobooth/mallampati_detection.git
